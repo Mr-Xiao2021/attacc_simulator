@@ -8,6 +8,7 @@ from src.type import *
 
 
 class Ramulator:
+    """运行并缓存 ATTAcc PIM 工作负载的 Ramulator2 模拟结果。"""
 
     def __init__(self,
                  modelinfos,
@@ -15,6 +16,15 @@ class Ramulator:
                  output_log='',
                  fast_mode=False,
                  num_hbm=5):
+        """初始化 Ramulator2 封装，并加载已有的模拟结果缓存。
+
+        参数：
+            modelinfos: 包含 ``num_heads`` 和 ``dhead`` 的模型信息。
+            ramulator_dir: Ramulator2 及 trace 生成器所在目录。
+            output_log: 用于持久化模拟结果的 CSV 文件。
+            fast_mode: 以固定操作组规模模拟，并按组数缩放结果。
+            num_hbm: 分摊计算操作的 HBM 设备数量。
+        """
         self.df = pd.DataFrame()
         self.ramulator_dir = ramulator_dir
         self.output_log = output_log
@@ -27,6 +37,7 @@ class Ramulator:
         self.fast_mode = fast_mode
 
     def make_yaml_file(self, yaml_file, file_name, power_constraint):
+        """创建 HBM3-PIM Ramulator2 配置文件。"""
         trace_path = os.path.join(self.ramulator_dir, file_name + ".trace")
         line = ""
         line += "Frontend:\n"
@@ -68,6 +79,7 @@ class Ramulator:
             f.write(line)
 
     def update_log_file(self, log):
+        """将一条模拟结果追加到 CSV 缓存，并删除重复记录。"""
         if self.df.empty:
             if os.path.exists(self.output_log):
                 df = pd.read_csv(self.output_log)
@@ -92,6 +104,11 @@ class Ramulator:
     #def run_ramulator(self):
     def run_ramulator(self, pim_type: PIMType, l, num_ops_per_hbm, dbyte,
                       yaml_file, file_name):
+        """生成 PIM trace，运行 Ramulator2，并解析原始计数器。
+
+        返回：
+            依次包含周期数以及 MAC、softmax、MVGB、MVSB、WRGB 次数的列表。
+        """
         pim_type_name = pim_type.name.lower(
         ) if not pim_type == PIMType.BA else "bank"
         trace_file = os.path.join(self.ramulator_dir, file_name + '.trace')
@@ -155,6 +172,12 @@ class Ramulator:
         return out
 
     def run(self, pim_type: PIMType, layer: Layer, power_constraint=True):
+        """运行模拟、缓存计数器，并计算执行时间和数据流量。
+
+        返回：
+            ``(exec_time, traffic)``。时间单位为秒；流量依次为 SI、TSV、
+            GIOMUX、BGMUX 和 DRAM bank 访问的字节数。
+        """
         if os.path.exists(self.ramulator_dir):
             l = layer.n
             dhead = self.dhead
@@ -212,12 +235,14 @@ class Ramulator:
             traffic = [i * self.num_hbm for i in traffic]
             traffic = [i * num_ops_group for i in traffic]
             exec_time = self.tCK * cycle / 1000 / 1000 / 1000  # ns -> s
+
             return exec_time, traffic
 
         else:
             assert 0, "Need to install ramulator"
 
     def output(self, pim_type: PIMType, layer: Layer, power_constraint=True):
+        """返回当前工作负载的缓存结果；缓存未命中时运行新的模拟。"""
         if self.df.empty:
             self.run(pim_type, layer, power_constraint)
 

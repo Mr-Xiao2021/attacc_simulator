@@ -1,0 +1,2044 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Attacc Decode Pipeline</title>
+<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+</head>
+<body>
+<iframe sandbox="allow-scripts" referrerpolicy="no-referrer" title="Attacc Decode Pipeline" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;title&gt;Attacc Decode Pipeline&lt;/title&gt;
+&lt;style&gt;:root {
+  color-scheme: light dark;
+  background-color: var(
+    --background,
+    var(--color-background-primary, light-dark(rgb(255 255 255), rgb(24 24 24)))
+  ) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --color-background-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --card: color-mix(in oklab, var(--foreground) 5%, var(--background));
+  --card-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --popover: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255), rgb(45 45 45))
+  );
+  --popover-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --primary: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --primary-foreground: var(
+    --color-text-inverse,
+    light-dark(rgb(255 255 255), rgb(13 13 13))
+  );
+  --secondary: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%))
+  );
+  --secondary-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: var(
+    --color-text-secondary,
+    light-dark(rgb(26 28 31 / 49.4%), rgb(255 255 255 / 49.8%))
+  );
+  --accent: var(
+    --color-background-info,
+    light-dark(rgb(229 242 255), rgb(13 39 63))
+  );
+  --accent-foreground: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --destructive: var(
+    --color-text-warning,
+    light-dark(rgb(226 85 7), rgb(255 133 73))
+  );
+  --border: var(
+    --color-border-secondary,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+  --input: var(
+    --color-border-primary,
+    light-dark(
+      rgb(26 28 31 / 11.8%),
+      color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+    )
+  );
+  --ring: var(
+    --color-ring-primary,
+    light-dark(rgb(51 156 255), rgb(131 195 255 / 76%))
+  );
+  --font-size-base: var(--font-text-md-size, 14px);
+  --blue: light-dark(rgb(51 156 255), rgb(51 156 255));
+  --orange: light-dark(rgb(226 85 7), rgb(251 106 34));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+  --red: light-dark(rgb(224 46 42), rgb(255 103 100));
+  --purple: light-dark(rgb(146 79 247), rgb(173 123 249));
+  --yellow: light-dark(rgb(255 195 0), rgb(255 210 64));
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, &quot;Segoe UI&quot;, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;,
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --radius: var(--border-radius-lg, 12.5px);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+}
+
+:root[data-theme=&quot;light&quot;] {
+  color-scheme: light;
+}
+
+:root[data-theme=&quot;dark&quot;] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html &gt; body {
+  /* Preserve MCP aliases for older inline renderers without creating :root cycles. */
+  --color-background-primary: var(
+    --background,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --color-text-primary: var(
+    --foreground,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --color-border-secondary: var(
+    --border,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+
+  margin: 0;
+  padding: 5px;
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans) !important;
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium, 500);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table-responsive &gt; .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead th {
+  padding-block: 8px;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 6px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align=&quot;right&quot;]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align=&quot;center&quot;]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: superellipse(1.5);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget &gt; :not(.card, .progress) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress {
+  display: flex;
+  height: 6px;
+  margin-block: calc((var(--line-height-normal, 1.5em) - 6px) / 2);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+}
+
+.progress-bar {
+  height: 100%;
+  flex-shrink: 0;
+  border: 0;
+  background: var(--viz-series-1);
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls &gt; .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls &gt; .form-label &gt; :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type=&quot;file&quot;] {
+  padding: 0;
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control[type=&quot;file&quot;]::file-selector-button {
+  min-height: 26px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+}
+
+.form-control[type=&quot;file&quot;]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type=&quot;color&quot;] {
+  width: 40px;
+  height: 28px;
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: superellipse(1.5);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: &quot;&quot;;
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type=&quot;radio&quot;] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type=&quot;radio&quot;]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: &quot;&quot;;
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+  [aria-pressed=&quot;true&quot;],
+  [aria-selected=&quot;true&quot;],
+  .is-selected
+) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed=&quot;true&quot;], [aria-selected=&quot;true&quot;], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  .btn,
+  .form-control,
+  .form-select {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .form-control,
+  .form-select {
+    font-size: max(16px, var(--font-size-normal));
+  }
+
+  .form-control[type=&quot;file&quot;]::file-selector-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .form-control-color[type=&quot;color&quot;] {
+    width: 44px;
+    height: 44px;
+  }
+
+  .form-control:is(
+    [type=&quot;date&quot;],
+    [type=&quot;datetime-local&quot;],
+    [type=&quot;month&quot;],
+    [type=&quot;time&quot;],
+    [type=&quot;week&quot;]
+  ) {
+    min-width: 0;
+    max-width: 100%;
+    padding-block: 8px;
+  }
+
+  .form-check {
+    min-height: 44px;
+    padding-inline: 15px;
+  }
+
+  .form-check-input {
+    position: relative;
+  }
+
+  .form-check-input::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    content: &quot;&quot;;
+    transform: translate(-50%, -50%);
+  }
+
+  .form-check-label {
+    display: inline-flex;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .form-range {
+    height: 44px;
+    touch-action: pan-y;
+  }
+
+  .form-range::-webkit-slider-runnable-track {
+    height: 44px;
+  }
+
+  .form-range::-moz-range-track {
+    height: 44px;
+  }
+
+  .form-range::-webkit-slider-thumb {
+    margin-top: 12px;
+  }
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget &gt; svg {
+  width: 100%;
+}
+
+/* Model-authored chart rules can otherwise stretch icons after these styles load. */
+svg.lucide {
+  display: block;
+  width: 16px !important;
+  height: 16px !important;
+  flex: none;
+  margin: 0 !important;
+  stroke-width: 1.6;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html&gt;body{padding:0}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id=&quot;attacc-pipeline-branches-v2&quot;&gt;
+  &lt;style&gt;
+    #attacc-pipeline-branches-v2 {
+      width: 100%;
+      color: var(--foreground);
+    }
+    #attacc-pipeline-branches-v2 .ap2-title {
+      margin: 0 0 4px;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+    #attacc-pipeline-branches-v2 .ap2-subtitle {
+      margin-bottom: 14px;
+    }
+    #attacc-pipeline-branches-v2 .ap2-controls {
+      margin-bottom: 14px;
+    }
+    #attacc-pipeline-branches-v2 .ap2-head-control {
+      flex: 1 1 280px;
+      max-width: 430px;
+    }
+    #attacc-pipeline-branches-v2 .ap2-control-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 3px;
+    }
+    #attacc-pipeline-branches-v2 .ap2-defs,
+    #attacc-pipeline-branches-v2 .ap2-legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px 14px;
+    }
+    #attacc-pipeline-branches-v2 .ap2-defs {
+      margin: 8px 0 14px;
+    }
+    #attacc-pipeline-branches-v2 .ap2-legend {
+      margin: 0 0 16px;
+    }
+    #attacc-pipeline-branches-v2 .ap2-stage-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 12px;
+      margin: -7px 0 18px;
+    }
+    #attacc-pipeline-branches-v2 .ap2-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #attacc-pipeline-branches-v2 .ap2-swatch {
+      width: 14px;
+      height: 9px;
+      border-radius: 2px;
+      background: var(--viz-series-1);
+    }
+    #attacc-pipeline-branches-v2 .ap2-swatch.ap2-raw {
+      background: color-mix(in oklab, var(--viz-series-1) 28%, transparent);
+    }
+    #attacc-pipeline-branches-v2 .ap2-map {
+      margin: 0 0 22px;
+      padding: 12px 0 0;
+      border-top: 1px solid var(--border);
+    }
+    #attacc-pipeline-branches-v2 .ap2-map-title,
+    #attacc-pipeline-branches-v2 .ap2-mode-title {
+      margin: 0 0 10px;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+    #attacc-pipeline-branches-v2 .ap2-map-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+      gap: 18px;
+    }
+    #attacc-pipeline-branches-v2 .ap2-map-column {
+      min-width: 0;
+      padding-left: 12px;
+      border-left: 2px solid var(--border);
+    }
+    #attacc-pipeline-branches-v2 .ap2-map-column h3 {
+      margin: 0 0 3px;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+    #attacc-pipeline-branches-v2 .ap2-map-path {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      padding: 8px 0;
+      color: var(--foreground);
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+    }
+    #attacc-pipeline-branches-v2 .ap2-map-path:last-child {
+      border-bottom: 0;
+    }
+    #attacc-pipeline-branches-v2 .ap2-map-path code {
+      white-space: normal;
+    }
+    #attacc-pipeline-branches-v2 .ap2-mode {
+      margin-top: 22px;
+    }
+    #attacc-pipeline-branches-v2 .ap2-mode-head {
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border);
+    }
+    #attacc-pipeline-branches-v2 .ap2-mode-head .ap2-mode-title {
+      margin-bottom: 2px;
+    }
+    #attacc-pipeline-branches-v2 .ap2-branch {
+      padding: 18px 0 20px;
+      border-bottom: 1px solid var(--border);
+      scroll-margin-top: 16px;
+    }
+    #attacc-pipeline-branches-v2 .ap2-branch-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 8px 12px;
+      margin-bottom: 12px;
+    }
+    #attacc-pipeline-branches-v2 .ap2-branch-head h3 {
+      margin: 0;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+    #attacc-pipeline-branches-v2 .ap2-branch-grid {
+      display: grid;
+      grid-template-columns: minmax(190px, 0.85fr) minmax(280px, 1.4fr);
+      gap: 16px 24px;
+      align-items: start;
+    }
+    #attacc-pipeline-branches-v2 .ap2-formulas {
+      min-width: 0;
+    }
+    #attacc-pipeline-branches-v2 .ap2-formula {
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    #attacc-pipeline-branches-v2 .ap2-formula:last-child {
+      border-bottom: 0;
+    }
+    #attacc-pipeline-branches-v2 .ap2-measures {
+      min-width: 0;
+    }
+    #attacc-pipeline-branches-v2 .ap2-measure {
+      display: grid;
+      grid-template-columns: 56px minmax(90px, 1fr) minmax(90px, auto);
+      gap: 8px;
+      align-items: center;
+      min-height: 32px;
+    }
+    #attacc-pipeline-branches-v2 .ap2-measure-label {
+      text-align: end;
+      white-space: nowrap;
+    }
+    #attacc-pipeline-branches-v2 .ap2-track {
+      position: relative;
+      height: 18px;
+      overflow: hidden;
+      border-radius: 3px;
+      background: var(--muted);
+    }
+    #attacc-pipeline-branches-v2 .ap2-bar-raw,
+    #attacc-pipeline-branches-v2 .ap2-bar-effective {
+      position: absolute;
+      inset: 0 auto 0 0;
+      border-radius: 3px;
+      transition: width 180ms ease;
+    }
+    #attacc-pipeline-branches-v2 .ap2-bar-raw.ap2-attn {
+      background: color-mix(in oklab, var(--viz-series-3) 30%, transparent);
+    }
+    #attacc-pipeline-branches-v2 .ap2-bar-effective.ap2-attn {
+      background: var(--viz-series-3);
+    }
+    #attacc-pipeline-branches-v2 .ap2-bar-raw.ap2-fc {
+      background: color-mix(in oklab, var(--viz-series-1) 30%, transparent);
+    }
+    #attacc-pipeline-branches-v2 .ap2-bar-effective.ap2-fc {
+      background: var(--viz-series-1);
+    }
+    #attacc-pipeline-branches-v2 .ap2-bar-raw.ap2-x2g {
+      background: color-mix(in oklab, var(--viz-series-2) 30%, transparent);
+    }
+    #attacc-pipeline-branches-v2 .ap2-bar-effective.ap2-x2g {
+      background: var(--viz-series-2);
+    }
+    #attacc-pipeline-branches-v2 .ap2-value {
+      white-space: nowrap;
+    }
+    #attacc-pipeline-branches-v2 .ap2-timeline-block {
+      margin-top: 15px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    #attacc-pipeline-branches-v2 .ap2-timeline-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 4px 12px;
+      margin-bottom: 5px;
+    }
+    #attacc-pipeline-branches-v2 .ap2-timeline {
+      width: 100%;
+      min-width: 0;
+    }
+    #attacc-pipeline-branches-v2 .ap2-timeline-svg {
+      display: block;
+      width: 100%;
+      overflow: visible;
+    }
+    #attacc-pipeline-branches-v2 .ap2-svg-text {
+      fill: var(--foreground);
+      font-size: 12px;
+      letter-spacing: 0;
+    }
+    #attacc-pipeline-branches-v2 .ap2-svg-muted {
+      fill: var(--muted-foreground);
+      font-size: 12px;
+      letter-spacing: 0;
+    }
+    #attacc-pipeline-branches-v2 .ap2-lane-line,
+    #attacc-pipeline-branches-v2 .ap2-axis-line {
+      stroke: var(--border);
+      stroke-width: 1;
+      shape-rendering: crispEdges;
+    }
+    #attacc-pipeline-branches-v2 .ap2-overlap-band {
+      fill: var(--accent);
+      opacity: 0.7;
+    }
+    #attacc-pipeline-branches-v2 .ap2-task-gpu {
+      fill: var(--viz-series-1);
+    }
+    #attacc-pipeline-branches-v2 .ap2-task-link {
+      fill: var(--viz-series-2);
+    }
+    #attacc-pipeline-branches-v2 .ap2-task-gemv {
+      fill: var(--viz-series-3);
+    }
+    #attacc-pipeline-branches-v2 .ap2-task-softmax {
+      fill: var(--viz-series-4);
+    }
+    #attacc-pipeline-branches-v2 .ap2-task-label {
+      fill: var(--foreground);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0;
+      pointer-events: none;
+    }
+    #attacc-pipeline-branches-v2 .ap2-timeline-summary {
+      margin-top: 2px;
+      text-align: end;
+    }
+    #attacc-pipeline-branches-v2 .ap2-bottleneck {
+      color: var(--foreground);
+      font-weight: 500;
+    }
+    #attacc-pipeline-branches-v2 .ap2-common {
+      margin-top: 22px;
+      padding-top: 12px;
+      border-top: 2px solid var(--border);
+    }
+    #attacc-pipeline-branches-v2 .ap2-writeback {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0 18px;
+    }
+    #attacc-pipeline-branches-v2 .ap2-writeback-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    @media (max-width: 620px) {
+      #attacc-pipeline-branches-v2 .ap2-map-grid,
+      #attacc-pipeline-branches-v2 .ap2-branch-grid,
+      #attacc-pipeline-branches-v2 .ap2-writeback {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      #attacc-pipeline-branches-v2 .ap2-map-column + .ap2-map-column {
+        margin-top: 4px;
+      }
+    }
+    @media (max-width: 380px) {
+      #attacc-pipeline-branches-v2 .ap2-measure {
+        grid-template-columns: 46px minmax(72px, 1fr) minmax(78px, auto);
+        gap: 6px;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #attacc-pipeline-branches-v2 .ap2-bar-raw,
+      #attacc-pipeline-branches-v2 .ap2-bar-effective {
+        transition: none;
+      }
+    }
+  &lt;/style&gt;
+
+  &lt;section aria-labelledby=&quot;ap2-title&quot;&gt;
+    &lt;h2 id=&quot;ap2-title&quot; class=&quot;ap2-title&quot;&gt;_pipeline() 的 6 条分支路径&lt;/h2&gt;
+    &lt;div class=&quot;ap2-subtitle text-small text-muted&quot;&gt;代码做的是总时间折算，不是事件级调度；每节的示例输入都满足对应条件&lt;/div&gt;
+
+    &lt;div class=&quot;viz-controls ap2-controls&quot;&gt;
+      &lt;label class=&quot;form-label ap2-head-control&quot; for=&quot;ap2-heads&quot;&gt;
+        &lt;span class=&quot;ap2-control-head&quot;&gt;
+          &lt;span&gt;每张 GPU 负责的 head 数 N&lt;/span&gt;
+          &lt;span id=&quot;ap2-heads-value&quot; class=&quot;tabular-nums&quot;&gt;4&lt;/span&gt;
+        &lt;/span&gt;
+        &lt;input id=&quot;ap2-heads&quot; class=&quot;form-range&quot; type=&quot;range&quot; min=&quot;2&quot; max=&quot;6&quot; step=&quot;1&quot; value=&quot;4&quot;&gt;
+      &lt;/label&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;ap2-defs text-small&quot;&gt;
+      &lt;code&gt;r = 1/N&lt;/code&gt;
+      &lt;code&gt;F = QKV + Projection&lt;/code&gt;
+      &lt;code&gt;A = Score + Context + Softmax&lt;/code&gt;
+      &lt;code&gt;X = 两次 X2G 总时间&lt;/code&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;ap2-legend text-small text-muted&quot; aria-label=&quot;图例&quot;&gt;
+      &lt;span class=&quot;ap2-legend-item&quot;&gt;&lt;span class=&quot;ap2-swatch ap2-raw&quot;&gt;&lt;/span&gt;原始总时间&lt;/span&gt;
+      &lt;span class=&quot;ap2-legend-item&quot;&gt;&lt;span class=&quot;ap2-swatch&quot;&gt;&lt;/span&gt;折算后写回的有效时间&lt;/span&gt;
+      &lt;span&gt;A 仅用于条件判断；Score/Context 不改，Softmax 最后置 0&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;ap2-stage-legend text-small text-muted&quot; aria-label=&quot;细粒度时间轴缩写&quot;&gt;
+      &lt;code&gt;Q = QKV&lt;/code&gt;
+      &lt;code&gt;↓ = GPU→PIM&lt;/code&gt;
+      &lt;code&gt;S = Score&lt;/code&gt;
+      &lt;code&gt;M = Softmax&lt;/code&gt;
+      &lt;code&gt;C = Context&lt;/code&gt;
+      &lt;code&gt;↑ = PIM→GPU&lt;/code&gt;
+      &lt;code&gt;P = Projection&lt;/code&gt;
+      &lt;span&gt;淡色竖带 = 至少两种资源同时工作&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;nav class=&quot;ap2-map&quot; aria-labelledby=&quot;ap2-map-title&quot;&gt;
+      &lt;h3 id=&quot;ap2-map-title&quot; class=&quot;ap2-map-title&quot;&gt;条件树&lt;/h3&gt;
+      &lt;div class=&quot;ap2-map-grid&quot;&gt;
+        &lt;div class=&quot;ap2-map-column&quot;&gt;
+          &lt;h3&gt;&lt;code&gt;level=False&lt;/code&gt;&lt;/h3&gt;
+          &lt;div class=&quot;text-small text-muted&quot;&gt;只折算 Attention 与 X2G 的重叠&lt;/div&gt;
+          &lt;a class=&quot;ap2-map-path&quot; href=&quot;#ap2-l0-a&quot;&gt;&lt;code&gt;A &amp;gt; X&lt;/code&gt;&lt;span&gt;① A 瓶颈&lt;/span&gt;&lt;/a&gt;
+          &lt;a class=&quot;ap2-map-path&quot; href=&quot;#ap2-l0-b&quot;&gt;&lt;code&gt;A ≤ X&lt;/code&gt;&lt;span&gt;② X 瓶颈&lt;/span&gt;&lt;/a&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;ap2-map-column&quot;&gt;
+          &lt;h3&gt;&lt;code&gt;level=True&lt;/code&gt;&lt;/h3&gt;
+          &lt;div class=&quot;text-small text-muted&quot;&gt;再加入 GPU FC 的 Head-level pipeline&lt;/div&gt;
+          &lt;a class=&quot;ap2-map-path&quot; href=&quot;#ap2-l1-a&quot;&gt;&lt;code&gt;A &amp;gt; F 且 A &amp;gt; X&lt;/code&gt;&lt;span&gt;③ A 瓶颈&lt;/span&gt;&lt;/a&gt;
+          &lt;a class=&quot;ap2-map-path&quot; href=&quot;#ap2-l1-b&quot;&gt;&lt;code&gt;A &amp;gt; F 且 A ≤ X&lt;/code&gt;&lt;span&gt;④ X 瓶颈&lt;/span&gt;&lt;/a&gt;
+          &lt;a class=&quot;ap2-map-path&quot; href=&quot;#ap2-l1-c&quot;&gt;&lt;code&gt;A ≤ F 且 F &amp;gt; X&lt;/code&gt;&lt;span&gt;⑤ F 瓶颈&lt;/span&gt;&lt;/a&gt;
+          &lt;a class=&quot;ap2-map-path&quot; href=&quot;#ap2-l1-d&quot;&gt;&lt;code&gt;A ≤ F 且 F ≤ X&lt;/code&gt;&lt;span&gt;⑥ X 瓶颈&lt;/span&gt;&lt;/a&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/nav&gt;
+
+    &lt;section class=&quot;ap2-mode&quot; aria-labelledby=&quot;ap2-l0-title&quot;&gt;
+      &lt;div class=&quot;ap2-mode-head&quot;&gt;
+        &lt;h2 id=&quot;ap2-l0-title&quot; class=&quot;ap2-mode-title&quot;&gt;Level 0 · &lt;code&gt;level=False&lt;/code&gt;&lt;/h2&gt;
+        &lt;div class=&quot;text-small text-muted&quot;&gt;QKV 与 Projection 不参与该分支，只调整 X2G；A 本身不在这里被改写&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div id=&quot;ap2-level-false-list&quot;&gt;&lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;section class=&quot;ap2-mode&quot; aria-labelledby=&quot;ap2-l1-title&quot;&gt;
+      &lt;div class=&quot;ap2-mode-head&quot;&gt;
+        &lt;h2 id=&quot;ap2-l1-title&quot; class=&quot;ap2-mode-title&quot;&gt;Level 1 · &lt;code&gt;level=True&lt;/code&gt;&lt;/h2&gt;
+        &lt;div class=&quot;text-small text-muted&quot;&gt;同时折算 GPU FC、X2G 与 PIM Attention 在不同 head 间的重叠&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div id=&quot;ap2-level-true-list&quot;&gt;&lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;section class=&quot;ap2-common&quot; aria-labelledby=&quot;ap2-common-title&quot;&gt;
+      &lt;h2 id=&quot;ap2-common-title&quot; class=&quot;ap2-mode-title&quot;&gt;所有分支共同的写回步骤&lt;/h2&gt;
+      &lt;div class=&quot;ap2-writeback&quot;&gt;
+        &lt;div class=&quot;ap2-writeback-row&quot;&gt;&lt;code&gt;qkv.exec_time&lt;/code&gt;&lt;span&gt;← Q′&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;ap2-writeback-row&quot;&gt;&lt;code&gt;proj.exec_time&lt;/code&gt;&lt;span&gt;← P′&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;ap2-writeback-row&quot;&gt;&lt;code&gt;第一个 comm_x2g&lt;/code&gt;&lt;span&gt;← X′ / 2&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;ap2-writeback-row&quot;&gt;&lt;code&gt;第二个 comm_x2g&lt;/code&gt;&lt;span&gt;← X′ / 2&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;ap2-writeback-row&quot;&gt;&lt;code&gt;softmax.exec_time&lt;/code&gt;&lt;span&gt;← 0&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;ap2-writeback-row&quot;&gt;&lt;code&gt;score/context&lt;/code&gt;&lt;span&gt;保持原值&lt;/span&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+  &lt;/section&gt;
+
+  &lt;script&gt;
+    (() =&gt; {
+      const root = document.getElementById(&#x27;attacc-pipeline-branches-v2&#x27;);
+      const headsInput = root.querySelector(&#x27;#ap2-heads&#x27;);
+      const headsValue = root.querySelector(&#x27;#ap2-heads-value&#x27;);
+      const falseList = root.querySelector(&#x27;#ap2-level-false-list&#x27;);
+      const trueList = root.querySelector(&#x27;#ap2-level-true-list&#x27;);
+
+      const branches = [
+        {
+          id: &#x27;ap2-l0-a&#x27;, level: false, number: &#x27;①&#x27;, condition: &#x27;A &gt; X&#x27;,
+          bottleneck: &#x27;Attention&#x27;, sample: {a: 48, q: 24, p: 8, x: 24},
+          transform: (v, r) =&gt; ({x: v.x * r}),
+          formulas: (v, out) =&gt; [
+            `X′ = rX = ${out.x.toFixed(1)}`,
+            &#x27;QKV / Projection：不修改&#x27;,
+            &#x27;含义：X2G 只留下一个 head 的边界开销&#x27;
+          ]
+        },
+        {
+          id: &#x27;ap2-l0-b&#x27;, level: false, number: &#x27;②&#x27;, condition: &#x27;A ≤ X&#x27;,
+          bottleneck: &#x27;X2G&#x27;, sample: {a: 24, q: 24, p: 8, x: 48},
+          transform: (v, r) =&gt; ({x: v.x - v.a * (1 - r)}),
+          formulas: (v, out) =&gt; [
+            `X′ = X − A(1−r) = ${out.x.toFixed(1)}`,
+            &#x27;QKV / Projection：不修改&#x27;,
+            &#x27;含义：只能隐藏 N−1 个 Attention 重叠区间&#x27;
+          ]
+        },
+        {
+          id: &#x27;ap2-l1-a&#x27;, level: true, number: &#x27;③&#x27;, condition: &#x27;A &gt; F 且 A &gt; X&#x27;,
+          bottleneck: &#x27;Attention&#x27;, sample: {a: 60, q: 24, p: 8, x: 24},
+          transform: (v, r) =&gt; ({q: v.q * r, p: v.p * r, x: v.x * r}),
+          formulas: (v, out) =&gt; [
+            `Q′ = rQ = ${out.q.toFixed(1)}；P′ = rP = ${out.p.toFixed(1)}`,
+            `X′ = rX = ${out.x.toFixed(1)}`,
+            &#x27;含义：A 最慢，FC 与 X2G 都只留下一个 head&#x27;
+          ]
+        },
+        {
+          id: &#x27;ap2-l1-b&#x27;, level: true, number: &#x27;④&#x27;, condition: &#x27;A &gt; F 且 A ≤ X&#x27;,
+          bottleneck: &#x27;X2G&#x27;, sample: {a: 48, q: 24, p: 8, x: 64},
+          transform: (v, r) =&gt; ({q: v.q * r, p: v.p * r, x: v.x - v.a * (1 - r)}),
+          formulas: (v, out) =&gt; [
+            `Q′ = rQ = ${out.q.toFixed(1)}；P′ = rP = ${out.p.toFixed(1)}`,
+            `X′ = X − A(1−r) = ${out.x.toFixed(1)}`,
+            &#x27;含义：FC 留一个 head；A 只能部分掩盖更长的 X2G&#x27;
+          ]
+        },
+        {
+          id: &#x27;ap2-l1-c&#x27;, level: true, number: &#x27;⑤&#x27;, condition: &#x27;A ≤ F 且 F &gt; X&#x27;,
+          bottleneck: &#x27;GPU FC&#x27;, sample: {a: 24, q: 48, p: 16, x: 32},
+          transform: (v, r) =&gt; ({
+            q: v.q - v.a * (1 - r) * 0.75,
+            p: v.p - v.a * (1 - r) * 0.25,
+            x: v.x * r
+          }),
+          formulas: (v, out) =&gt; [
+            `Q′ = Q − ¾A(1−r) = ${out.q.toFixed(1)}`,
+            `P′ = P − ¼A(1−r) = ${out.p.toFixed(1)}`,
+            `X′ = rX = ${out.x.toFixed(1)}；FC 的扣减按 QKV:Proj = 3:1 分配`
+          ]
+        },
+        {
+          id: &#x27;ap2-l1-d&#x27;, level: true, number: &#x27;⑥&#x27;, condition: &#x27;A ≤ F 且 F ≤ X&#x27;,
+          bottleneck: &#x27;X2G&#x27;, sample: {a: 24, q: 24, p: 8, x: 64},
+          transform: (v, r) =&gt; ({q: v.q * r, p: v.p * r, x: v.x - v.a * (1 - r)}),
+          formulas: (v, out) =&gt; [
+            `Q′ = rQ = ${out.q.toFixed(1)}；P′ = rP = ${out.p.toFixed(1)}`,
+            `X′ = X − A(1−r) = ${out.x.toFixed(1)}`,
+            &#x27;含义：X 最慢；FC 留一个 head，A 只掩盖部分 X2G&#x27;
+          ]
+        }
+      ];
+
+      const measure = (label, kind, raw, effective, status, maxValue) =&gt; {
+        const rawWidth = Math.max(0, Math.min(100, raw / maxValue * 100));
+        const effectiveWidth = effective === null ? rawWidth : Math.max(0, Math.min(100, effective / maxValue * 100));
+        const value = effective === null
+          ? `${raw.toFixed(1)} · ${status}`
+          : `${raw.toFixed(1)} → ${effective.toFixed(1)}`;
+        return `
+          &lt;div class=&quot;ap2-measure&quot;&gt;
+            &lt;div class=&quot;ap2-measure-label&quot;&gt;&lt;code&gt;${label}&lt;/code&gt;&lt;/div&gt;
+            &lt;div class=&quot;ap2-track&quot; aria-hidden=&quot;true&quot;&gt;
+              &lt;div class=&quot;ap2-bar-raw ap2-${kind}&quot; style=&quot;width:${rawWidth}%&quot;&gt;&lt;/div&gt;
+              &lt;div class=&quot;ap2-bar-effective ap2-${kind}&quot; style=&quot;width:${effectiveWidth}%&quot;&gt;&lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;ap2-value tabular-nums&quot;&gt;${value}&lt;/div&gt;
+          &lt;/div&gt;`;
+      };
+
+      const renderBranch = (branch, r) =&gt; {
+        const v = branch.sample;
+        const out = branch.transform(v, r);
+        const rawF = branch.level ? v.q + v.p : null;
+        const effectiveF = branch.level ? out.q + out.p : null;
+        const maxValue = Math.max(v.a, v.x, rawF || 0, 1);
+        const rows = [measure(&#x27;A&#x27;, &#x27;attn&#x27;, v.a, null, &#x27;判定量&#x27;, maxValue)];
+        if (branch.level) rows.push(measure(&#x27;F&#x27;, &#x27;fc&#x27;, rawF, effectiveF, &#x27;&#x27;, maxValue));
+        rows.push(measure(&#x27;X&#x27;, &#x27;x2g&#x27;, v.x, out.x, &#x27;&#x27;, maxValue));
+        const formulaRows = branch.formulas(v, out)
+          .map(line =&gt; `&lt;div class=&quot;ap2-formula&quot;&gt;&lt;code&gt;${line}&lt;/code&gt;&lt;/div&gt;`)
+          .join(&#x27;&#x27;);
+        const inputText = branch.level
+          ? `示例：A=${v.a}，F=${rawF}（Q=${v.q}，P=${v.p}），X=${v.x}`
+          : `示例：A=${v.a}，X=${v.x}`;
+        const timelineMode = branch.level
+          ? &#x27;Q、P、A、X 全部按 head 拆分&#x27;
+          : &#x27;QKV/Projection 保持整层，只有 A、X 按 head 拆分&#x27;;
+
+        return `
+          &lt;section id=&quot;${branch.id}&quot; class=&quot;ap2-branch&quot; aria-labelledby=&quot;${branch.id}-title&quot;&gt;
+            &lt;div class=&quot;ap2-branch-head&quot;&gt;
+              &lt;span class=&quot;viz-badge&quot;&gt;分支 ${branch.number}&lt;/span&gt;
+              &lt;h3 id=&quot;${branch.id}-title&quot;&gt;&lt;code&gt;${branch.condition}&lt;/code&gt;&lt;/h3&gt;
+              &lt;span class=&quot;ap2-bottleneck&quot;&gt;瓶颈：${branch.bottleneck}&lt;/span&gt;
+              &lt;span class=&quot;text-small text-muted&quot;&gt;${inputText}&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;ap2-branch-grid&quot;&gt;
+              &lt;div class=&quot;ap2-formulas&quot;&gt;${formulaRows}&lt;/div&gt;
+              &lt;div class=&quot;ap2-measures&quot; role=&quot;img&quot; aria-label=&quot;${branch.condition} 分支的原始时间与折算后时间比较&quot;&gt;
+                ${rows.join(&#x27;&#x27;)}
+              &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;ap2-timeline-block&quot;&gt;
+              &lt;div class=&quot;ap2-timeline-head&quot;&gt;
+                &lt;span&gt;细粒度多 head 流水&lt;/span&gt;
+                &lt;span class=&quot;text-small text-muted&quot;&gt;${timelineMode}；A 三段等分、X 两方向等分&lt;/span&gt;
+              &lt;/div&gt;
+              &lt;div class=&quot;ap2-timeline&quot; data-branch-id=&quot;${branch.id}&quot;&gt;
+                &lt;svg class=&quot;ap2-timeline-svg&quot; role=&quot;img&quot; aria-label=&quot;${branch.condition} 分支的多 head 计算和通信时间轴&quot;&gt;&lt;/svg&gt;
+                &lt;div class=&quot;ap2-timeline-summary text-small text-muted tabular-nums&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/section&gt;`;
+      };
+
+      const buildTimeline = (branch, n) =&gt; {
+        const v = branch.sample;
+        const tasks = [];
+        const add = (id, head, order, label, resource, duration, deps) =&gt; {
+          tasks.push({id, head, order, label, resource, duration, deps});
+        };
+        const perHead = {
+          q: v.q / n,
+          p: v.p / n,
+          up: v.x / (2 * n),
+          score: v.a / (3 * n),
+          softmax: v.a / (3 * n),
+          context: v.a / (3 * n),
+          down: v.x / (2 * n)
+        };
+
+        if (branch.level) {
+          for (let head = 0; head &lt; n; head += 1) {
+            add(`q-${head}`, head, 0, &#x27;Q&#x27;, &#x27;GPU FC&#x27;, perHead.q, []);
+            add(`up-${head}`, head, 1, &#x27;↓&#x27;, &#x27;X2G Link&#x27;, perHead.up, [`q-${head}`]);
+            add(`score-${head}`, head, 2, &#x27;S&#x27;, &#x27;PIM GEMV&#x27;, perHead.score, [`up-${head}`]);
+            add(`softmax-${head}`, head, 3, &#x27;M&#x27;, &#x27;Softmax&#x27;, perHead.softmax, [`score-${head}`]);
+            add(`context-${head}`, head, 4, &#x27;C&#x27;, &#x27;PIM GEMV&#x27;, perHead.context, [`softmax-${head}`]);
+            add(`down-${head}`, head, 5, &#x27;↑&#x27;, &#x27;X2G Link&#x27;, perHead.down, [`context-${head}`]);
+            add(`p-${head}`, head, 6, &#x27;P&#x27;, &#x27;GPU FC&#x27;, perHead.p, [`down-${head}`]);
+          }
+        } else {
+          add(&#x27;q-all&#x27;, -1, 0, &#x27;QKV&#x27;, &#x27;GPU FC&#x27;, v.q, []);
+          for (let head = 0; head &lt; n; head += 1) {
+            add(`up-${head}`, head, 1, &#x27;↓&#x27;, &#x27;X2G Link&#x27;, perHead.up, [&#x27;q-all&#x27;]);
+            add(`score-${head}`, head, 2, &#x27;S&#x27;, &#x27;PIM GEMV&#x27;, perHead.score, [`up-${head}`]);
+            add(`softmax-${head}`, head, 3, &#x27;M&#x27;, &#x27;Softmax&#x27;, perHead.softmax, [`score-${head}`]);
+            add(`context-${head}`, head, 4, &#x27;C&#x27;, &#x27;PIM GEMV&#x27;, perHead.context, [`softmax-${head}`]);
+            add(`down-${head}`, head, 5, &#x27;↑&#x27;, &#x27;X2G Link&#x27;, perHead.down, [`context-${head}`]);
+          }
+          add(&#x27;p-all&#x27;, -1, 6, &#x27;Proj&#x27;, &#x27;GPU FC&#x27;, v.p, Array.from({length: n}, (_, head) =&gt; `down-${head}`));
+        }
+
+        const scheduled = new Map();
+        const remaining = new Map(tasks.map(task =&gt; [task.id, task]));
+        const resourceEnd = {&#x27;GPU FC&#x27;: 0, &#x27;X2G Link&#x27;: 0, &#x27;PIM GEMV&#x27;: 0, &#x27;Softmax&#x27;: 0};
+
+        while (remaining.size) {
+          const ready = [...remaining.values()].filter(task =&gt; task.deps.every(dep =&gt; scheduled.has(dep)));
+          ready.forEach(task =&gt; {
+            const dependencyEnd = task.deps.length
+              ? Math.max(...task.deps.map(dep =&gt; scheduled.get(dep).end))
+              : 0;
+            task.earliest = Math.max(dependencyEnd, resourceEnd[task.resource]);
+          });
+          ready.sort((left, right) =&gt;
+            left.earliest - right.earliest || left.head - right.head || left.order - right.order
+          );
+          const task = ready[0];
+          task.start = task.earliest;
+          task.end = task.start + task.duration;
+          resourceEnd[task.resource] = task.end;
+          scheduled.set(task.id, task);
+          remaining.delete(task.id);
+        }
+
+        const placed = [...scheduled.values()];
+        const points = [...new Set(placed.flatMap(task =&gt; [task.start, task.end]))].sort((a, b) =&gt; a - b);
+        const overlaps = [];
+        for (let index = 0; index &lt; points.length - 1; index += 1) {
+          const start = points[index];
+          const end = points[index + 1];
+          const middle = (start + end) / 2;
+          const resources = new Set(
+            placed.filter(task =&gt; task.start &lt; middle &amp;&amp; task.end &gt; middle).map(task =&gt; task.resource)
+          );
+          if (resources.size &gt;= 2) {
+            const previous = overlaps[overlaps.length - 1];
+            if (previous &amp;&amp; Math.abs(previous.end - start) &lt; 1e-9) previous.end = end;
+            else overlaps.push({start, end});
+          }
+        }
+        return {
+          tasks: placed,
+          overlaps,
+          maxEnd: Math.max(...placed.map(task =&gt; task.end), 1)
+        };
+      };
+
+      const svgNode = (tag, attrs = {}, text = &#x27;&#x27;) =&gt; {
+        const node = document.createElementNS(&#x27;http://www.w3.org/2000/svg&#x27;, tag);
+        Object.entries(attrs).forEach(([key, value]) =&gt; node.setAttribute(key, value));
+        if (text) node.textContent = text;
+        return node;
+      };
+
+      const drawTimeline = (container, branch, n) =&gt; {
+        const svg = container.querySelector(&#x27;svg&#x27;);
+        const summary = container.querySelector(&#x27;.ap2-timeline-summary&#x27;);
+        const timeline = buildTimeline(branch, n);
+        const width = Math.max(320, Math.round(container.getBoundingClientRect().width || 736));
+        const compact = width &lt; 500;
+        const left = compact ? 67 : 94;
+        const right = 10;
+        const top = 22;
+        const laneGap = 36;
+        const barHeight = 21;
+        const resources = [&#x27;GPU FC&#x27;, &#x27;X2G Link&#x27;, &#x27;PIM GEMV&#x27;, &#x27;Softmax&#x27;];
+        const shortNames = [&#x27;GPU&#x27;, &#x27;Link&#x27;, &#x27;GEMV&#x27;, &#x27;SFM&#x27;];
+        const plotWidth = Math.max(180, width - left - right);
+        const axisY = top + resources.length * laneGap + 1;
+        const height = axisY + 38;
+        const scaleX = value =&gt; left + plotWidth * value / timeline.maxEnd;
+        const taskClass = {
+          &#x27;GPU FC&#x27;: &#x27;ap2-task-gpu&#x27;,
+          &#x27;X2G Link&#x27;: &#x27;ap2-task-link&#x27;,
+          &#x27;PIM GEMV&#x27;: &#x27;ap2-task-gemv&#x27;,
+          &#x27;Softmax&#x27;: &#x27;ap2-task-softmax&#x27;
+        };
+
+        svg.replaceChildren();
+        svg.setAttribute(&#x27;viewBox&#x27;, `0 0 ${width} ${height}`);
+        svg.setAttribute(&#x27;height&#x27;, height);
+        svg.appendChild(svgNode(&#x27;title&#x27;, {}, `${branch.condition} 的细粒度流水时间轴`));
+        svg.appendChild(svgNode(&#x27;desc&#x27;, {}, &#x27;四条资源泳道展示多个 head 的 QKV、双向通信、Score、Softmax、Context 和 Projection，淡色背景表示至少两种资源并行。&#x27;));
+
+        timeline.overlaps.forEach(interval =&gt; {
+          svg.appendChild(svgNode(&#x27;rect&#x27;, {
+            x: scaleX(interval.start),
+            y: top - 4,
+            width: Math.max(1, scaleX(interval.end) - scaleX(interval.start)),
+            height: resources.length * laneGap - 5,
+            class: &#x27;ap2-overlap-band&#x27;
+          }));
+        });
+
+        resources.forEach((resource, index) =&gt; {
+          const y = top + index * laneGap;
+          svg.appendChild(svgNode(&#x27;text&#x27;, {
+            x: left - 7,
+            y: y + 15,
+            class: &#x27;ap2-svg-text&#x27;,
+            &#x27;text-anchor&#x27;: &#x27;end&#x27;
+          }, compact ? shortNames[index] : resource));
+          svg.appendChild(svgNode(&#x27;line&#x27;, {
+            x1: left,
+            y1: y + barHeight + 5,
+            x2: left + plotWidth,
+            y2: y + barHeight + 5,
+            class: &#x27;ap2-lane-line&#x27;
+          }));
+        });
+
+        timeline.tasks.forEach(task =&gt; {
+          const lane = resources.indexOf(task.resource);
+          const x = scaleX(task.start);
+          const taskWidth = Math.max(1.5, plotWidth * task.duration / timeline.maxEnd);
+          const y = top + lane * laneGap;
+          const headLabel = task.head &lt; 0 ? &#x27;ALL&#x27; : `H${task.head}`;
+          const label = `${headLabel} ${task.label}`;
+          const rect = svgNode(&#x27;rect&#x27;, {
+            x,
+            y,
+            width: taskWidth,
+            height: barHeight,
+            rx: 2,
+            class: taskClass[task.resource],
+            &#x27;data-tooltip&#x27;: `${headLabel} · ${task.label} · ${task.start.toFixed(1)}–${task.end.toFixed(1)}`
+          });
+          svg.appendChild(rect);
+          if (taskWidth &gt; Math.max(30, label.length * 5.2 + 8)) {
+            svg.appendChild(svgNode(&#x27;text&#x27;, {
+              x: x + taskWidth / 2,
+              y: y + 14,
+              class: &#x27;ap2-task-label&#x27;,
+              &#x27;text-anchor&#x27;: &#x27;middle&#x27;
+            }, label));
+          }
+        });
+
+        svg.appendChild(svgNode(&#x27;line&#x27;, {
+          x1: left,
+          y1: axisY,
+          x2: left + plotWidth,
+          y2: axisY,
+          class: &#x27;ap2-axis-line&#x27;
+        }));
+        const tickCount = compact ? 3 : 5;
+        for (let index = 0; index &lt;= tickCount; index += 1) {
+          const x = left + plotWidth * index / tickCount;
+          const value = timeline.maxEnd * index / tickCount;
+          svg.appendChild(svgNode(&#x27;line&#x27;, {
+            x1: x,
+            y1: axisY - 3,
+            x2: x,
+            y2: axisY + 4,
+            class: &#x27;ap2-axis-line&#x27;
+          }));
+          svg.appendChild(svgNode(&#x27;text&#x27;, {
+            x,
+            y: axisY + 17,
+            class: &#x27;ap2-svg-muted&#x27;,
+            &#x27;text-anchor&#x27;: index === 0 ? &#x27;start&#x27; : index === tickCount ? &#x27;end&#x27; : &#x27;middle&#x27;
+          }, value.toFixed(value &lt; 10 ? 1 : 0)));
+        }
+        svg.appendChild(svgNode(&#x27;text&#x27;, {
+          x: left + plotWidth / 2,
+          y: axisY + 35,
+          class: &#x27;ap2-svg-muted&#x27;,
+          &#x27;text-anchor&#x27;: &#x27;middle&#x27;
+        }, &#x27;结构示意时间线&#x27;));
+
+        const overlapTime = timeline.overlaps.reduce((sum, interval) =&gt; sum + interval.end - interval.start, 0);
+        summary.textContent = `结构跨度 ${timeline.maxEnd.toFixed(1)}；存在资源重叠 ${overlapTime.toFixed(1)} 时间单位`;
+      };
+
+      const drawTimelines = () =&gt; {
+        const n = Number(headsInput.value);
+        root.querySelectorAll(&#x27;.ap2-timeline&#x27;).forEach(container =&gt; {
+          const branch = branches.find(item =&gt; item.id === container.dataset.branchId);
+          drawTimeline(container, branch, n);
+        });
+      };
+
+      const render = () =&gt; {
+        const n = Number(headsInput.value);
+        const r = 1 / n;
+        headsValue.textContent = `${n}，r=${r.toFixed(3)}`;
+        falseList.innerHTML = branches.filter(branch =&gt; !branch.level).map(branch =&gt; renderBranch(branch, r)).join(&#x27;&#x27;);
+        trueList.innerHTML = branches.filter(branch =&gt; branch.level).map(branch =&gt; renderBranch(branch, r)).join(&#x27;&#x27;);
+        requestAnimationFrame(drawTimelines);
+      };
+
+      headsInput.addEventListener(&#x27;input&#x27;, render);
+      let resizeFrame = 0;
+      const resizeObserver = new ResizeObserver(() =&gt; {
+        cancelAnimationFrame(resizeFrame);
+        resizeFrame = requestAnimationFrame(drawTimelines);
+      });
+      resizeObserver.observe(root);
+      render();
+    })();
+  &lt;/script&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set([&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+  let lastPointerWasTouch = false;
+  let pinnedByTouch = false;
+
+  const getTrigger = (target) =&gt;
+    target?.nodeType === Node.ELEMENT_NODE
+      ? target.closest(&quot;[data-tooltip]&quot;)
+      : null;
+  const containsTarget = (trigger, target) =&gt;
+    target?.nodeType != null &amp;&amp; trigger.contains(target);
+  const getContent = (trigger) =&gt;
+    trigger.getAttribute(&quot;data-tooltip&quot;)?.trim() ?? &quot;&quot;;
+  const getPlacement = (trigger) =&gt; {
+    const placement = trigger.getAttribute(&quot;data-tooltip-placement&quot;);
+    return tooltipPlacements.has(placement) ? placement : &quot;top&quot;;
+  };
+  const getTooltip = () =&gt; {
+    if (tooltip == null) {
+      tooltip = document.createElement(&quot;div&quot;);
+      tooltip.id = tooltipId;
+      tooltip.className = &quot;tooltip&quot;;
+      tooltip.setAttribute(&quot;role&quot;, &quot;tooltip&quot;);
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) =&gt; {
+    const ids = new Set(
+      (trigger.getAttribute(&quot;aria-describedby&quot;) ?? &quot;&quot;)
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute(&quot;aria-describedby&quot;);
+    } else {
+      trigger.setAttribute(&quot;aria-describedby&quot;, [...ids].join(&quot; &quot;));
+    }
+  };
+  const clearOpenTimeout = () =&gt; {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) =&gt; {
+    clearOpenTimeout();
+    pinnedByTouch = false;
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) =&gt; {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-width&quot;,
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-height&quot;,
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: &quot;fixed&quot;,
+    })
+      .then(({ x, y }) =&gt; {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = &quot;visible&quot;;
+      })
+      .catch(() =&gt; {
+        if (activeTrigger === trigger &amp;&amp; request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) =&gt; {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = &quot;hidden&quot;;
+    floating.style.transform = &quot;translate(0, 0)&quot;;
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () =&gt; {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) =&gt; {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() &lt; skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() =&gt; {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) =&gt; {
+    if (event.pointerType === &quot;touch&quot;) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handlePointer = (event) =&gt; {
+    lastPointerWasTouch =
+      event.type === &quot;pointerdown&quot; &amp;&amp; event.pointerType === &quot;touch&quot;;
+  };
+  const handleTouchClick = (event) =&gt; {
+    const isTouch = event.pointerType === &quot;touch&quot; || lastPointerWasTouch;
+    lastPointerWasTouch = false;
+    if (!isTouch || event.detail === 0) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (
+      trigger == null ||
+      !trigger.isConnected ||
+      getContent(trigger).length === 0 ||
+      (pinnedByTouch &amp;&amp; activeTrigger === trigger)
+    ) {
+      if (pinnedByTouch) {
+        closeTooltip();
+      }
+      return;
+    }
+    openTooltip(trigger);
+    pinnedByTouch = activeTrigger === trigger;
+    window.setTimeout(() =&gt; {
+      if (activeTrigger === trigger &amp;&amp; !trigger.isConnected) {
+        closeTooltip(false);
+      }
+    }, 0);
+  };
+  const handleLeave = (event) =&gt; {
+    if (pinnedByTouch) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger?.matches(&quot;:focus-visible&quot;)) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) =&gt; {
+    if (event.key === &quot;Escape&quot;) {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) =&gt; {
+    lastPointerWasTouch = false;
+    const trigger = getTrigger(event.target);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const destroy = () =&gt; {
+    closeTooltip(false);
+    lastPointerWasTouch = false;
+    document.removeEventListener(&quot;pointerover&quot;, handlePointerOpen);
+    document.removeEventListener(&quot;pointerdown&quot;, handlePointer);
+    document.removeEventListener(&quot;pointercancel&quot;, handlePointer);
+    document.removeEventListener(&quot;click&quot;, handleTouchClick);
+    document.removeEventListener(&quot;pointerout&quot;, handleLeave);
+    document.removeEventListener(&quot;focusin&quot;, handleFocusIn);
+    document.removeEventListener(&quot;focusout&quot;, handleLeave);
+    document.removeEventListener(&quot;keydown&quot;, handleKeyDown);
+    document.removeEventListener(&quot;contextmenu&quot;, handleContextMenu);
+    tooltip = null;
+  };
+
+  document.addEventListener(&quot;pointerover&quot;, handlePointerOpen);
+  document.addEventListener(&quot;pointerdown&quot;, handlePointer);
+  document.addEventListener(&quot;pointercancel&quot;, handlePointer);
+  document.addEventListener(&quot;click&quot;, handleTouchClick);
+  document.addEventListener(&quot;pointerout&quot;, handleLeave);
+  document.addEventListener(&quot;focusin&quot;, handleFocusIn);
+  document.addEventListener(&quot;focusout&quot;, handleLeave);
+  document.addEventListener(&quot;keydown&quot;, handleKeyDown);
+  document.addEventListener(&quot;contextmenu&quot;, handleContextMenu);
+  window.addEventListener(&quot;pagehide&quot;, destroy, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-lucide&quot; async src=&quot;https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  const initialize = () =&gt; {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById(&quot;codex-visualization-lucide&quot;)
+    ?.addEventListener(&quot;load&quot;, initialize, { once: true });
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</body>
+</html>

@@ -30,7 +30,7 @@ class System:
         self.model_set = 0
         if modelinfos is not None:
             self.model = Transformer(modelinfos,
-                                     tensor_parallel=self.GPU.num_xpu)
+                                     tensor_parallel=self.GPU.num_xpu) # 根据num_xpu做张量并行
             self.model_set = 1
 
         self.scaling_factor = scaling_factor
@@ -122,12 +122,14 @@ class System:
                     context_time += layer.exec_time
                 elif layer.name in ["softmax"]:
                     softmax_time += layer.exec_time
-
-            minimum_ratio = 1 / (self.model.num_heads / self.GPU.num_xpu)
-            if level == False:
+            # 单卡？
+            minimum_ratio = 1 / (self.model.num_heads / self.GPU.num_xpu) #一个GPU能分几个头
+            if level == False: # 仅考虑 Attention 内部流水的简化模型。
                 #softmax_time = 0
                 attn_time = score_time + context_time + softmax_time
-                if attn_time > x2g_time:
+                if attn_time > x2g_time: 
+                    # 计算能够掩盖通信流水，只需要计算第一个 head 的流水启动通信，加上最后一个 head 的流水排空通信
+                    # x2g_time的单位是所有 head 的流水时间单元是一次GPU->PIM->GPU, 前半段是KV传输，后半段是context传输
                     x2g_time *= minimum_ratio
                 else:
                     x2g_time -= attn_time * (1 - minimum_ratio)
@@ -162,23 +164,25 @@ class System:
                     layer.exec_time = prj_time
                 elif layer.name in ["comm_x2g"]:
                     # for 2 comm_x2g layers
+                    # decoder 是一个 Python 列表，构造时向里面放入了两个不同的 Layer 对象，但它们的名字相同。
                     layer.exec_time = x2g_time / 2
                 elif layer.name in ["softmax"]:
                     layer.exec_time = softmax_time
 
         def _ff_parallel(layers):
+            # 让 GPU 和 PIM 一起算 FFN
             bw_scale = self.devices['Acc'].peak_memory_bandwidth / self.devices[
                 'GPU'].peak_memory_bandwidth
             for layer in layers:
                 if "ff" in layer.name:
-                    if layer.bound == "compute":
+                    if layer.bound == "compute": # 计算受限
                         attn_flops = self.devices[
                             'GPU'].peak_memory_bandwidth / layer.dbyte * 2 * bw_scale
                         ratio = self.devices['GPU'].peak_flops / (
                             self.devices['GPU'].peak_flops + attn_flops)
                         layer.exec_time *= ratio
 
-                    elif layer.bound == "memory":
+                    elif layer.bound == "memory": # 访存受限
                         attn_eff_bw = self.devices[
                             'GPU'].peak_memory_bandwidth * bw_scale / bs
                         ratio = self.devices['GPU'].peak_memory_bandwidth / (
@@ -200,7 +204,7 @@ class System:
         s_flops = 0
         g_flops = 0
 
-        gen_energies = {}
+        gen_energies = {} #gen阶段按算子(layer)的划分统计
 
         unit_energy = {
             'g_all': 0,
@@ -216,7 +220,7 @@ class System:
         energy_all = []
         for itr, bs in enumerate(target_bs):
             time = 0
-            wrt_io_busy = 0
+            wrt_io_busy = 0 # 上一次写结束的时间戳，表示写传输通道要忙到什么时刻才空闲
             s_decoder = self.model.sum_decoder
             g_decoder = self.model.gen_decoder
 
@@ -228,8 +232,8 @@ class System:
 
                 # Time to transfer KV matrices to memory (PCIe bandwidth)
                 if layer.type == LayerType.X2G:
-                    exec_time += max(wrt_io_busy - time, 0)
-                    wrt_io_busy = time + exec_time
+                    exec_time += max(wrt_io_busy - time, 0) # 可能会等待
+                    wrt_io_busy = time + exec_time # 更新忙时时刻
                 layer.exec_time = exec_time
                 layer.energy = energy
 
@@ -238,7 +242,7 @@ class System:
                 _opb_print(layer, 'sum')
 
             ## Generation stage
-            for gen_stage, decoder_block in enumerate(g_decoder):
+            for gen_stage, decoder_block in enumerate(g_decoder): # 这里分了每个decode iteration
                 for l_idx, layer in enumerate(decoder_block):
                     # Get execution time and energy
                     if layer.type in [
@@ -256,12 +260,12 @@ class System:
                     if gen_stage == 0:
                         _opb_print(layer, 'gen')
 
-                    # energy
+                    # energy 
                     if layer.type in gen_energies:
-                        gen_energies[layer.type]['mem'] += layer.energy[0]
-                        gen_energies[layer.type]['comp'] += sum(
+                        gen_energies[layer.type]['mem'] += layer.energy[0] # GPU片外HBM能耗，PIM为DRAM Cell + HBM内部数据通路能耗
+                        gen_energies[layer.type]['comp'] += sum( # comp = 片上缓存与寄存器能耗 + ALU能耗
                             layer.energy[1:5])
-                        gen_energies[layer.type]['comm'] += layer.energy[5]
+                        gen_energies[layer.type]['comm'] += layer.energy[5] # GPU之间的 AllReduce, GPU与AttAcc之间的数据传输
                     else:
                         gen_energies[layer.type] = {}
                         gen_energies[layer.type]['mem'] = layer.energy[0]
@@ -270,6 +274,7 @@ class System:
                         gen_energies[layer.type]['comm'] = layer.energy[5]
 
                     unit_energy['g_all'] += sum(layer.energy)
+                    # energy: [HBM能耗, L2能耗, L1能耗, 寄存器能耗, ALU能耗, 通信能耗]
                     unit_energy['g_offmem'] += layer.energy[0]
                     unit_energy['g_l2'] += layer.energy[1]
                     unit_energy['g_l1'] += layer.energy[2]
@@ -282,6 +287,12 @@ class System:
                     _pipeline(decoder_block, pipe)
                     if parallel_ff:
                         _ff_parallel(decoder_block)
+
+            ''' #######
+            
+            根据前面的计算，进行分类汇总
+
+            ''' #######
 
             s_perf = {
                 'all': 0,
@@ -357,9 +368,13 @@ class System:
                             g_perf['norm'] += exec_time
                     elif layer.type == LayerType.SOFTMAX:
                         g_perf['softmax'] += exec_time
-
+            # 因为不同 step 的 KV cache 长度不同，所以每一步 Attention 时间也不同。这里计算平均生成一个 token 的耗时
             g_perf = {k: v / (lout - 1) for k, v in g_perf.items()}
 
+            '''
+            unit_energy   按硬件位置分类
+            gen_energies 按算子类型分类
+            '''
             energies = [
                 unit_energy['g_all'], unit_energy['g_offmem'],
                 unit_energy['g_l2'], unit_energy['g_l1'], unit_energy['g_reg'],
@@ -377,7 +392,7 @@ class System:
             comm_energy = sum([v['comm'] for k, v in gen_energies.items()])
             energies.append(comm_energy)
 
-            energies = [i / (lout - 1) for i in energies]
+            energies = [i / (lout - 1) for i in energies] # 平均每个 token、单个 decoder block 的能耗
 
             perf = list(s_perf.values()) + list(g_perf.values())
 
@@ -413,12 +428,13 @@ class System:
         if self.hetero_name in [DeviceType.CPU, DeviceType.PIM]:
             cap += self.devices['Acc'].aggregate_memory_capacity
         cap = int(cap / (1024 * 1024 * 1024))
+        # PIM/CPU 带宽是单张 GPU 带宽的多少倍
         bw_scale = self.devices['Acc'].peak_memory_bandwidth / self.devices[
             'GPU'].peak_memory_bandwidth
 
         opb = self.devices['GPU'].peak_flops / self.devices[
             'GPU'].peak_memory_bandwidth
-        if self.model.dtype in ['W8A8']:
+        if self.model.dtype in [DataType.W8A8]: # INT8 时把峰值算力翻倍
             opb *= 2
 
         tag = [
@@ -432,7 +448,7 @@ class System:
         ]
         if self.hetero_name == DeviceType.PIM:
             config[0] = self.devices['Acc'].pim_type.name
-
+        # 模型与硬件信息，模拟参数，时间统计，能耗统计
         output = [tag, config, perf_all, energy_all]
         print(
             "    Batch: {}, Throughput: {:.2f} tokens/s Latency: {:.2f}ms, pipe/ff_parallel: {}/{}, powerlimit: {}"
@@ -445,6 +461,15 @@ class System:
             perfs = [output]
 
     def get_required_mem_capacity(self, batch_size, lin, lout):
+        """估算给定批大小和序列长度下的总内存需求。
+        Args:
+            batch_size: 批次中的请求数量。
+            lin: 输入序列长度。
+            lout: 输出阶段长度。
+
+        Returns:
+            以字节为单位的 (weight_memory, kv_memory, temp_memory)。
+        """
         ndec = self.model.ndec
         hdim = self.model.hdim
         nhead = self.model.num_heads
@@ -465,7 +490,6 @@ class System:
         temp_memory = max((hdim + l * nhead) * a_byte, hdim * 2 * a_byte,
                           l * nhead * 2 * a_byte,
                           (ff_scale * hdim + hdim) * a_byte) + l * nhead
-        kv_memory = ndec * 2 * l * (hdim) * a_byte
+        kv_memory = ndec * 2 * l * (hdim) * a_byte #  层数 × K/V两份 × 序列长度 × 隐藏维度 × 每元素字节
 
         return weight_memory, kv_memory * batch_size, temp_memory * batch_size
-

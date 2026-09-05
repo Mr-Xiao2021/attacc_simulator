@@ -15,7 +15,7 @@ class LayerType(Enum):
     SOFTMAX = 3
     NORM = 4
     G2G = 5
-    X2G = 6
+    X2G = 6 # 似乎X2G和G2X都用这个
 
 
 class DeviceType(Enum):

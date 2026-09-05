@@ -155,7 +155,7 @@ def main():
             args.system, args.gpu, args.ngpu,
             [args.lin, args.lout, args.batch]))
     num_gpu = args.ngpu
-    gmem_cap = args.gmemcap * 1024 * 1024 * 1024
+    gmem_cap = args.gmemcap * 1024 * 1024 * 1024 # 显存
     output_path = "output.csv"
     if os.path.exists(output_path):
         os.system("rm " + output_path)

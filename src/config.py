@@ -80,32 +80,49 @@ def make_xpu_config(gpu_type: GPUType,
     config['GPU']["NUM_DEVICE"] = 8 if num_gpu is None else num_gpu
 
     if gpu_type == GPUType.A100a:
-        # Ref: DGX-A100 whitepaper
+        # A100a 表示采用 HBM3 参数的 A100。基础规格参考 DGX-A100 whitepaper。
+        # 这里的 core 指 GPU 的 SM，而不是单个 CUDA core。
         config['GPU']["NUM_CORE"] = 108
+        # 单块 GPU 的峰值计算吞吐量，默认 312 TFLOPS；flops 可覆盖该值。
         config['GPU']["FLOPS_PER_DEVICE"] = 312 * 1000 * 1000 * 1000 * 1000 \
                                             if flops is None else flops
+        # 单块 GPU 的显存容量，默认 80 GiB；mem_cap 来自 --gmemcap。
         config['GPU']["MEM_CAPACITY_PER_DEVICE"] = 80 * 1024 * 1024 * 1024 \
                                                     if mem_cap is None else mem_cap
 
+        # 单块 GPU 的片外 HBM 带宽，默认 3352 GB/s；mem_bw 可覆盖该值。
         config['GPU']["OFF_MEM_BW_PER_DEVICE"] = 3352 * 1000 * 1000 * 1000 \
                                                   if mem_bw is None else mem_bw
+        # 暂不模拟 L2 带宽瓶颈，因此设为无穷；下方保留了 3.8 TB/s 的备选值。
         config['GPU']["L2_MEM_BW_PER_DEVICE"] = float('inf')
         #config['GPU']["L2_MEM_BW_PER_DEVICE"] = 3.8 * 1000 * 1000 * 1000 * 1000
+        # 每个 SM 可用的 L1/共享存储容量为 192 KiB。
         config['GPU']["L1_CAP_PER_CORE"] = 192 * 1024
+        # 单块 GPU 的 L2 容量为 40 MiB。
         config['GPU']["L2_CAP_PER_DEVICE"] = 40 * 1024 * 1024
+        # 单块 GPU 的 NVLink 聚合双向带宽为 600 GB/s；通信模型会按方向折半。
         config['GPU']["INTERFACE_BW"] = 600 * 1000 * 1000 * 1000
+        # GPU 每字节访存、每次计算和通信所使用的能耗参数表。
         config['GPU']["ENERGY_TABLE"] = ENERGY_TABLE['GPU']
 
+        # DGX 主机侧包含两个 CPU，每个 CPU 按 64 个核心建模。
         config['CPU']["NUM_DEVICE"] = 2
         config['CPU']["NUM_CORE"] = 64
+        # 单个 CPU 的峰值计算吞吐量按 4 TFLOPS 建模。
         config['CPU']["FLOPS_PER_DEVICE"] = 4 * 1000 * 1000 * 1000 * 1000
+        # 单个 CPU 的内存容量按 1 TiB 建模。
         config['CPU']["MEM_CAPACITY_PER_DEVICE"] = 1024 * 1024 * 1024 * 1024
+        # 单个 CPU 的片外内存带宽按 200 GB/s 建模。
         config['CPU']["OFF_MEM_BW_PER_DEVICE"] = 200 * 1000 * 1000 * 1000
+        # 与 GPU 路径一致，暂不把 CPU 的 L2 带宽作为性能瓶颈。
         config['CPU']["L2_MEM_BW_PER_DEVICE"] = float('inf')
         # TODO: Modify it
+        # CPU 缓存容量是当前模型中的近似值，后续仍需按目标平台校准。
         config['CPU']["L1_CAP_PER_CORE"] = 96 * 1024
         config['CPU']["L2_CAP_PER_DEVICE"] = 256 * 1024 * 1024
+        # CPU 与 GPU/加速器之间的聚合互连带宽：4 条链路，每条 64 GB/s。
         config['CPU']["INTERFACE_BW"] = 4 * 64 * 1000 * 1000 * 1000
+        # 当前 CPU 能耗表全为 0，因此模拟器暂不统计 CPU 能耗。
         config['CPU']["ENERGY_TABLE"] = ENERGY_TABLE['CPU']
 
     elif gpu_type == GPUType.H100:
@@ -215,6 +232,7 @@ def make_model_config(name, dtype):
     model_table['MT-1008B'] = [128, 25600, 160, 160, 4, 1]
     model_table['OPT-66B'] = [64, 9216, 72, 128, 4, 1]
 
+    # decoder 层数, 隐藏维度, 注意力头数, 每个注意力头的维度, 前馈网络的缩放因子, GQA大小
     ndec, hdim, nheads, dhead, ff_scale, gqa_size = model_table[name]
     config = {
         'name': name,
